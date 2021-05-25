@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9d938d400b97134b99ccde91d0bb48c, type: 3}
+  m_Name: Noise_Perlin_2D
+  m_EditorClassIdentifier: 
+  maker:
+    computeShader: {fileID: 7200000, guid: bd06979b3b4d2d34f879fb9e85a11aab, type: 3}
+    kernelName: Noise2DGen
+    threadGroup: {x: 8, y: 8, z: 1}
+    parameterJson: 
+    textureShaderName: Result
+    resolution: 512
+    autoUpdata: 1
+    noiseState:
+      seed: 10
+      frequency: 0.066
+      octaves: 3
+      lacunarity: 1.5
+      gain: 0.71
+      weightedStrength: 0
+      pingPongStrength: 2
+      cellularJitterMod: 1
+      domainWarpAmp: 30
+      noiseType: 2
+      rotationType: 0
+      fractalType: 1
+      cellularDisType: 1
+      cellularReturnType: 1
+      domainWarpType: 0
+      invertColor: 1
+      offset: {x: 1.84, y: 0, z: 0}

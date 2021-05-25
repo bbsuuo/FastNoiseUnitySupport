@@ -1,0 +1,127 @@
+﻿#pragma kernel Noise2DGen
+#pragma kernel Noise3DGen
+
+RWTexture2D<float4> Result;
+RWTexture3D<float4> Result3D;
+
+#pragma multi_compile __ _InvertValue
+#pragma multi_compile __ _OPENSIMPLEX2S _CELLULAR _PERLIN _VALUE_CUBIC _VALUE
+#pragma multi_compile __ _FractalFBM _FractalRIDGED _FractalPINGPONG _Fractal_DOMAIN_WARP_PROGRESSIVE _Fractal_DOMAIN_WARP_INDEPENDENT
+#pragma multi_compile __ _CELLULAR_EUCLIDEANSQ _CELLULAR_MANHATTAN _CELLULAR_HYBRID
+ 
+
+#include "../Library/FastNoiseLite.hlsl"
+
+ 
+
+#if defined(_OPENSIMPLEX2S)
+   #define NOISETYPE 1
+#elif defined(_CELLULAR)
+   #define NOISETYPE 2
+#elif defined(_PERLIN)
+   #define NOISETYPE 3
+#elif defined(_VALUE_CUBIC)
+   #define NOISETYPE 4
+#elif defined(_VALUE)
+   #define NOISETYPE 5
+#else
+   #define NOISETYPE 0
+#endif
+
+#if defined(_FractalFBM)
+   #define FRACTALTYPE 1
+#elif defined(_FractalRIDGED)
+   #define FRACTALTYPE 2
+#elif defined(_FractalPINGPONG)
+   #define FRACTALTYPE 3
+#elif defined(_Fractal_DOMAIN_WARP_PROGRESSIVE)
+   #define FRACTALTYPE 4
+#elif defined(_Fractal_DOMAIN_WARP_INDEPENDENT)
+   #define FRACTALTYPE 5
+#else
+   #define FRACTALTYPE 0
+#endif
+
+#if defined(_CELLULAR_EUCLIDEANSQ)
+    #define CELLULARDISTYPE 1
+#elif defined(_CELLULAR_MANHATTAN)
+    #define CELLULARDISTYPE 2
+#elif defined(_CELLULAR_HYBRID)
+    #define CELLULARDISTYPE 3
+#else 
+    #define CELLULARDISTYPE 0
+#endif
+
+
+ 
+ 
+ //Noise State
+int rotationType;
+int cellularReturnType;
+int domainWarpType;
+float resolution;
+int seed;
+float frequency;
+int octaves;
+float lacunarity;
+float gain;
+float weightedStrength;
+float pingPongStrength;
+float cellularJitterMod;
+float domainWarpAmp;
+
+//Extra
+float4 noiseOffsetWithResolution;
+ 
+
+fnl_state GetNoiseState(){
+    fnl_state noiseState = (fnl_state)0;
+    noiseState.seed = seed;
+    noiseState.frequency = frequency;
+    noiseState.noise_type = NOISETYPE;
+    noiseState.rotation_type_3d = rotationType;
+    noiseState.octaves = octaves;
+    noiseState.lacunarity = lacunarity;
+    noiseState.gain = gain;
+    noiseState.weighted_strength = weightedStrength;
+    noiseState.ping_pong_strength = pingPongStrength;
+    noiseState.cellular_return_type = cellularReturnType;
+    noiseState.cellular_jitter_mod = cellularJitterMod;
+    noiseState.domain_warp_type = domainWarpType;
+    noiseState.domain_warp_amp = domainWarpAmp;
+
+    noiseState.fractal_type = FRACTALTYPE;
+    noiseState.cellular_distance_func = CELLULARDISTYPE;
+    return noiseState;
+
+}
+
+
+[numthreads(8,8,1)]
+void Noise2DGen(uint3 id : SV_DispatchThreadID)
+{
+    float2 xy = id.xy + noiseOffsetWithResolution.xy;
+    fnl_state state = GetNoiseState();
+    float value = fnlGetNoise2D(state,xy.x,xy.y);
+    value = value * 0.5 + 0.5;
+#if defined (_InvertValue)
+    value = 1 - value;
+ #endif
+    Result[id.xy] = float4(value,value,value,1);
+ 
+ 
+}
+
+
+[numthreads(8,8,8)]
+void Noise3DGen(uint3 id : SV_DispatchThreadID)
+{
+    float3 xyz = id.xyz + noiseOffsetWithResolution.xyz;
+    fnl_state state = GetNoiseState();
+    float value = fnlGetNoise3D(state,xyz.x,xyz.y,xyz.z);
+    value = value * 0.5 + 0.5;
+ #if defined (_InvertValue)
+    value = 1 - value;
+ #endif
+    Result3D[id.xyz] = float4(value,value,value,1);
+}

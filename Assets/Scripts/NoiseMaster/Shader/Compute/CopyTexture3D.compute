@@ -1,0 +1,15 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CopyLayer
+
+Texture3D<float4> Source;
+RWTexture2D<float4> Destination;
+int layer;
+
+[numthreads(32,32,1)]
+void CopyLayer(uint3 id : SV_DispatchThreadID)
+{
+	uint3 pos = uint3(id.x, id.y, layer);
+	Destination[id.xy] = Source[pos];
+ 
+}
+
